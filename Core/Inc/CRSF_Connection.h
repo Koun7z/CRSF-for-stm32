@@ -10,24 +10,18 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+
 #include "stm32l4xx_hal.h"
 
-extern UART_HandleTypeDef* _uart;
-extern CRC_HandleTypeDef* _crc;
-
-extern uint8_t CRSF_Buffer[64];
+#include "CRSF_TelemetryData.h"
+#include "CRSF_HandsetData.h"
 
 extern uint32_t CRSF_LastChannelsPacked;
 extern struct CRSF_ChannelsPacked CRSF_Channels;
 
 extern bool CRSF_NewData;
 
-#define CRSF_SYNC_BYTE CRSF_Buffer[0]
-#define CRSF_MSG_LEN CRSF_Buffer[1]
-#define CRSF_FRAME_TYPE CRSF_Buffer[2]
-#define CRSF_DATA_BEGIN &(CRSF_Buffer[3])
-#define CRSF_DATA_LEN (CRSF_MSG_LEN - 2)
-#define CRSF_CRC_BEGIN &(CRSF_Buffer[2])
+
 
 typedef enum
 {
@@ -85,33 +79,17 @@ typedef enum
 	CRSF_ADDRESS_ELRS_LUA 		   = 0xEF  // !!Non-Standard!! Source address used by ExpressLRS Lua
 } CRSF_ADDRESS;
 
-struct __attribute__((packed))CRSF_ChannelsPacked
-{
-    unsigned ch0 : 11;
-    unsigned ch1 : 11;
-    unsigned ch2 : 11;
-    unsigned ch3 : 11;
-    unsigned ch4 : 11;
-    unsigned ch5 : 11;
-    unsigned ch6 : 11;
-    unsigned ch7 : 11;
-    unsigned ch8 : 11;
-    unsigned ch9 : 11;
-    unsigned ch10 : 11;
-    unsigned ch11 : 11;
-    unsigned ch12 : 11;
-    unsigned ch13 : 11;
-    unsigned ch14 : 11;
-    unsigned ch15 : 11;
-    uint8_t armStatus; // optional ExpressLRS 4.0
-};
 
 
 static void _receptionComplete();
-
 static void _parseData();
+static bool _sendData(UART_HandleTypeDef* huart, void* data, uint32_t nbytes);
 
-void CRSF_HandleRX(UART_HandleTypeDef *uart);
+void CRSF_HandleRX(UART_HandleTypeDef *huart);
+
+bool CRSF_SendGPS(struct CRSF_GPSData* gps);
+bool CRSF_SendBatteryData(struct CRSF_BatteryData* bat);
+bool CRSF_SendPing();
 
 void CRSF_HandleErr(UART_HandleTypeDef* huart);
 
