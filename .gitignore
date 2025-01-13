@@ -58,6 +58,7 @@ dkms.conf
 
 #?
 Debug/
+F411/
 
 #Eclipse CDT
 .project

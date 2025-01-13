@@ -8,8 +8,6 @@
 #ifndef INC_CRSF_HANDSETDATA_H_
 #define INC_CRSF_HANDSETDATA_H_
 
-const uint16_t CRSF_TX_Power[] = {0, 10, 25, 100, 500, 1000, 2000, 50};
-
 struct __attribute__((packed)) CRSF_ChannelsPacked
 {
     unsigned Ch1  : 11;
@@ -38,6 +36,7 @@ struct __attribute__((packed)) CRSF_LinkStatistics
 	uint8_t UplinklinkQuality;
 	int8_t UplinkSNR;
 	uint8_t DivActiveAnt;
+	uint8_t RFMode;
 	uint8_t UplinkTXPow;
 	uint8_t DownlinkRSSI;
 	uint8_t DownlinkQuality;

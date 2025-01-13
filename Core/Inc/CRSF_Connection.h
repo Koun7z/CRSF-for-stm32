@@ -7,21 +7,46 @@
 #ifndef INC_CRSF_CONNECTION_H_
 #define INC_CRSF_CONNECTION_H_
 
+#define TELEMETRY_ENABLED 0
+#define SERIAL_DEBUG 1
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
+#ifdef STM32L476xx
 #include "stm32l4xx_hal.h"
+#else
+#ifdef STM32F411xE
+#include "stm32f4xx_hal.h"
+#endif
+#endif
 
 #include "CRSF_TelemetryData.h"
 #include "CRSF_HandsetData.h"
 
-extern uint32_t CRSF_LastChannelsPacked;
+#if SERIAL_DEBUG
+#define DEBUG_LOG(...) printf(__VA_ARGS__)
+#else
+#define DEBUG_LOG(...)
+#endif
+
+// Handset Data
 extern struct CRSF_ChannelsPacked CRSF_Channels;
+extern struct CRSF_LinkStatistics CRSF_LinkState;
+
+//RX statistics
+extern uint32_t CRSF_LastChannelsPacked;
+extern uint32_t CRSF_PPS; // Packets per sedond
+
+//TX statistics
+extern bool CRSF_TelemetryQueued;
+
+//TODO: remove
+extern uint32_t _packetCount;
+
 
 extern bool CRSF_NewData;
-
-
 
 typedef enum
 {
@@ -79,20 +104,23 @@ typedef enum
 	CRSF_ADDRESS_ELRS_LUA 		   = 0xEF  // !!Non-Standard!! Source address used by ExpressLRS Lua
 } CRSF_ADDRESS;
 
+extern void (* CRSF_OnChannelsPacked)();
+extern void (* CRSF_OnLinkStatistics)();
 
-
-static void _receptionComplete();
-static void _parseData();
-static bool _sendData(UART_HandleTypeDef* huart, void* data, uint32_t nbytes);
+void CRSF_Init(UART_HandleTypeDef* huart);
 
 void CRSF_HandleRX(UART_HandleTypeDef *huart);
 
-bool CRSF_SendGPS(struct CRSF_GPSData* gps);
-bool CRSF_SendBatteryData(struct CRSF_BatteryData* bat);
-bool CRSF_SendPing();
+bool CRSF_QueueGPSData(struct CRSF_GPSData* gps);
+bool CRSF_QueueBatteryData(struct CRSF_BatteryData* bat);
+bool CRSF_QueuePing();
+
+//TODO: change to own error struct
+uint8_t CRSF_SendTelemetry();
 
 void CRSF_HandleErr(UART_HandleTypeDef* huart);
 
-void CRSF_Init(UART_HandleTypeDef* huart, CRC_HandleTypeDef* hcrc);
+
+void CRSF_DEBUG_PrintChannels();
 
 #endif /* INC_CRSF_CONNECTION_H_ */
