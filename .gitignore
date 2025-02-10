@@ -55,6 +55,9 @@ dkms.conf
 .metadata/
 .settings/
 *.ld
+*.cyclo
+*./mk
+*.list
 
 #?
 Debug/
