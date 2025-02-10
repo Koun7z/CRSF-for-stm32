@@ -56,12 +56,9 @@ dkms.conf
 .settings/
 *.ld
 *.cyclo
-*./mk
+*.mk
 *.list
-
-#?
-Debug/
-F411/
+*/makefile
 
 #Eclipse CDT
 .project
