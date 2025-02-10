@@ -20,16 +20,16 @@ struct __attribute__((packed)) CRSF_GPSData
 
 struct __attribute__((packed)) CRSF_BatteryData
 {
-	int Voltage 		: 16;
-	int Current 		: 16;
-	int UsedCapacity    : 24;
+	int Voltage          : 16;
+	int Current          : 16;
+	int UsedCapacity     : 24;
 	int BatteryRemaining : 8;
 };
 
 struct __attribute__((packed)) CRSF_BarometerData
 {
-	unsigned Unit 		   : 1;
-	unsigned Altitude 	   : 15;
+	unsigned Unit          : 1;
+	unsigned Altitude      : 15;
 	unsigned VerticalSpeed : 16;
 };
 
