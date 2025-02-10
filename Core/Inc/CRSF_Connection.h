@@ -44,8 +44,10 @@ extern bool CRSF_ArmStatus;
 // TX statistics
 extern bool CRSF_TelemetryQueued;
 
+// CRSF sync bytes
 typedef enum { CRSF_SYNC_DEFAULT = 0xC8, CRSF_SYNC_EDGE_TX = 0xEE } CRSF_SYNC;
 
+// CRSF frame types
 typedef enum {
 	CRSF_FRAMETYPE_GPS                       = 0x02,  // GPS position, ground speed, heading, altitude, satellite count
 	CRSF_FRAMETYPE_VARIO                     = 0x07,  // Vertical speed
@@ -76,6 +78,7 @@ typedef enum {
 	CRSF_FRAMETYPE_ARDUPILOT_RESP            = 0x80   // Ardupilot output?
 } CRSF_FRAMETYPE;
 
+// CRSF device adresses
 typedef enum {
 	CRSF_ADDRESS_BROADCAST         = 0x00,  // Broadcast (all devices process packet)
 	CRSF_ADDRESS_USB               = 0x10,  // ?
@@ -94,11 +97,18 @@ typedef enum {
 	CRSF_ADDRESS_ELRS_LUA          = 0xEF   // !!Non-Standard!! Source address used by ExpressLRS Lua
 } CRSF_ADDRESS;
 
+/**
+ * @brief Called every time, after receiving RC Channels Packed packet
+ */
 __weak void CRSF_OnChannelsPacked();
+
+/**
+ * @brief Called every time, after receiving Link Statistics packet
+ */
 __weak void CRSF_OnLinkStatistics();
 
 /**
- * @brief  	   Initialise comunication with the reciever
+ * @brief  	   Initialise communication with the reciever
  * @param[in]  huart uart handle
  */
 void CRSF_Init(UART_HandleTypeDef* huart);
@@ -109,15 +119,33 @@ void CRSF_Init(UART_HandleTypeDef* huart);
  */
 void CRSF_HandleRX(UART_HandleTypeDef* huart);
 
-bool CRSF_QueueGPSData(struct CRSF_GPSData* gps);
-bool CRSF_QueueBatteryData(struct CRSF_BatteryData* bat);
-bool CRSF_QueuePing();
+/**
+ * @brief 	  Queue GPS data to be sent as telemetry
+ * @param[in] *gps GPS data structure pointer
+ */
+void CRSF_QueueGPSData(struct CRSF_GPSData* gps);
 
-HAL_StatusTypeDef CRSF_SendTelemetry();
+/**
+ * @brief	  Queue Battery data to be sent as telemetry
+ * @param[in] *bat Battery data structure pointer
+ */
+void CRSF_QueueBatteryData(struct CRSF_BatteryData* bat);
 
+/**
+ * @brief  Queue ping sent to handset
+ * 		   (Last time I checked it doesn't repond)
+ */
+void CRSF_QueuePing();
+
+/**
+ * @brief	  Restore communication after uart error (call inside ErrorCallback)
+ * @param[in] huart uart handle
+ */
 void CRSF_HandleErr(UART_HandleTypeDef* huart);
 
-
+/**
+ * @brief Print channels data (1-4) through serial connection
+ */
 void CRSF_DEBUG_PrintChannels();
 
 #endif /* INC_CRSF_CONNECTION_H_ */

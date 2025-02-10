@@ -185,7 +185,7 @@ void CRSF_HandleRX(UART_HandleTypeDef* huart)
 	_receptionComplete();
 }
 
-bool CRSF_QueueGPSData(struct CRSF_GPSData* gps)
+void CRSF_QueueGPSData(struct CRSF_GPSData* gps)
 {
 	CRSF_TX_SYNC_BYTE  = CRSF_SYNC_DEFAULT;
 	CRSF_TX_MSG_LEN    = sizeof(struct CRSF_GPSData) + 2;
@@ -206,7 +206,7 @@ bool CRSF_QueueGPSData(struct CRSF_GPSData* gps)
 	return true;
 }
 
-bool CRSF_QueueBatteryData(struct CRSF_BatteryData* bat)
+void CRSF_QueueBatteryData(struct CRSF_BatteryData* bat)
 {
 	CRSF_TX_SYNC_BYTE  = CRSF_SYNC_DEFAULT;
 	CRSF_TX_MSG_LEN    = sizeof(struct CRSF_BatteryData) + 2;
@@ -222,10 +222,9 @@ bool CRSF_QueueBatteryData(struct CRSF_BatteryData* bat)
 	CRSF_TX_CRC = CRC_CalculateCRC8(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
 
 	CRSF_TelemetryQueued = true;
-	return true;
 }
 
-bool CRSF_QueueVariometerData(int16_t climb)
+void CRSF_QueueVariometerData(int16_t climb)
 {
 	CRSF_TX_SYNC_BYTE  = CRSF_SYNC_DEFAULT;
 	CRSF_TX_MSG_LEN    = sizeof(climb) + 2;
@@ -240,18 +239,16 @@ bool CRSF_QueueVariometerData(int16_t climb)
 	return true;
 }
 
-bool CRSF_QueueBarometerData()
+void CRSF_QueueBarometerData()
 {
 	CRSF_TX_SYNC_BYTE  = CRSF_SYNC_DEFAULT;
 	CRSF_TX_MSG_LEN    = sizeof(struct CRSF_BarometerData) + 2;
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_BARO_ALTITUDE;
 
 	// TODO
-
-	return false;
 }
 
-bool CRSF_QueuePing()
+void CRSF_QueuePing()
 {
 	CRSF_TX_SYNC_BYTE  = CRSF_SYNC_DEFAULT;
 	CRSF_TX_MSG_LEN    = 3;
@@ -261,8 +258,6 @@ bool CRSF_QueuePing()
 	CRSF_TX_CRC        = CRC_CalculateCRC8(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
 
 	CRSF_TelemetryQueued = true;
-
-	return true;
 }
 
 void CRSF_HandleTX() {}
