@@ -8,6 +8,8 @@
 #ifndef INC_CRSF_TELEMETRYDATA_H_
 #define INC_CRSF_TELEMETRYDATA_H_
 
+#include <stdint.h>
+
 struct __attribute__((packed)) CRSF_GPSData
 {
 	int32_t Latitude;

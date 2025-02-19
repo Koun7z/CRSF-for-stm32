@@ -6,6 +6,9 @@
  */
 #include "CRSF_Connection.h"
 
+#include <stdio.h>
+#include <string.h>
+
 #include "crc8.h"
 
 
@@ -28,10 +31,7 @@
 #define CRSF_TX_DEST       CRSF_TX_Buffer[3]
 #define CRSF_TX_SRC        CRSF_TX_Buffer[4]
 
-// Arming behaviour
-#define CRSF_HANDLE_ARM  1
-#define CRSF_ARM_CHANNEL CRSF_Channels.Ch5
-#define CRSF_ARM_DELAY   5  // Packet num
+
 
 // Global data structures
 struct CRSF_ChannelsPacked CRSF_Channels;
@@ -100,7 +100,8 @@ static void _parseData()
 
 #if CRSF_HANDLE_ARM
 			static uint8_t armCtr = 0;
-			bool arm              = (bool)(CRSF_ARM_CHANNEL > 1000);
+
+			bool arm = (bool)(CRSF_ARM_CHANNEL > 1000);
 			if(CRSF_ArmStatus != arm)
 			{
 				armCtr++;
@@ -191,7 +192,7 @@ void CRSF_QueueGPSData(struct CRSF_GPSData* gps)
 	CRSF_TX_MSG_LEN    = sizeof(struct CRSF_GPSData) + 2;
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_GPS;
 
-	struct CRSF_GPSData* buff = CRSF_TX_DATA_BEGIN;
+	struct CRSF_GPSData* buff = (struct CRSF_GPSData*) CRSF_TX_DATA_BEGIN;
 
 	buff->Latitude       = __REV(gps->Latitude);
 	buff->Longitude      = __REV(gps->Longitude);
@@ -203,7 +204,6 @@ void CRSF_QueueGPSData(struct CRSF_GPSData* gps)
 
 	CRSF_TelemetryQueued = true;
 
-	return true;
 }
 
 void CRSF_QueueBatteryData(struct CRSF_BatteryData* bat)
@@ -212,7 +212,7 @@ void CRSF_QueueBatteryData(struct CRSF_BatteryData* bat)
 	CRSF_TX_MSG_LEN    = sizeof(struct CRSF_BatteryData) + 2;
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_BATTERY_SENSOR;
 
-	struct CRSF_BatteryData* buff = CRSF_TX_DATA_BEGIN;
+	struct CRSF_BatteryData* buff = (struct CRSF_BatteryData*) CRSF_TX_DATA_BEGIN;
 
 	buff->Voltage          = __REV16(bat->Voltage);
 	buff->Current          = __REV16(bat->Current);
@@ -230,13 +230,12 @@ void CRSF_QueueVariometerData(int16_t climb)
 	CRSF_TX_MSG_LEN    = sizeof(climb) + 2;
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_VARIO;
 
-	int16_t* buff = CRSF_TX_Buffer;
+	int16_t* buff = (int16_t*) CRSF_TX_Buffer;
 	*buff         = __REV16(climb);
 
 	CRSF_TX_CRC = CRC_CalculateCRC8(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
 
 	CRSF_TelemetryQueued = true;
-	return true;
 }
 
 void CRSF_QueueBarometerData()
@@ -269,9 +268,7 @@ void CRSF_HandleErr(UART_HandleTypeDef* huart)
 		return;
 	}
 
-	uint32_t err = huart->ErrorCode;
-
-	DEBUG_LOG("err: %lu\n", err);
+	DEBUG_LOG("err: %lu\n", huart->ErrorCode);
 	_receptionComplete();
 }
 
@@ -284,7 +281,7 @@ void CRSF_Init(UART_HandleTypeDef* huart)
 	_receptionComplete();
 }
 
-void CRSF_DEBUG_PrintChannels()
+__weak void CRSF_DEBUG_PrintChannels()
 {
 	DEBUG_LOG("Ch1: %lu, Ch2: %lu, Ch3: %lu, Ch4: %lu\n", CRSF_Channels.Ch1, CRSF_Channels.Ch2, CRSF_Channels.Ch3,
 	          CRSF_Channels.Ch4);

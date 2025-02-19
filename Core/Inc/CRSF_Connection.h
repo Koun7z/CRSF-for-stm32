@@ -7,23 +7,23 @@
 #ifndef INC_CRSF_CONNECTION_H_
 #define INC_CRSF_CONNECTION_H_
 
+#include "CRSF_HandsetData.h"
+#include "CRSF_TelemetryData.h"
+
+#include <stdbool.h>
+
+// Platform dependent include
+// Delete this one and include your own, based on MCU you are using
+#	include "stm32f4xx_hal.h"  // <- F411 blackpill used for testing
+
+// Telemetry config
 #define TELEMETRY_ENABLED 1
 #define SERIAL_DEBUG      0
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-
-#ifdef STM32L476xx
-#  include "stm32l4xx_hal.h"
-#else
-#  ifdef STM32F411xE
-#	include "stm32f4xx_hal.h"
-#  endif
-#endif
-
-#include "CRSF_HandsetData.h"
-#include "CRSF_TelemetryData.h"
+// Arming behaviour
+#define CRSF_HANDLE_ARM  1
+#define CRSF_ARM_CHANNEL CRSF_Channels.Ch5
+#define CRSF_ARM_DELAY   5  // Packet num
 
 #if SERIAL_DEBUG
 #  define DEBUG_LOG(...) printf(__VA_ARGS__)
@@ -31,24 +31,12 @@
 #  define DEBUG_LOG(...)
 #endif
 
-// Handset Data
-extern struct CRSF_ChannelsPacked CRSF_Channels;
-extern struct CRSF_LinkStatistics CRSF_LinkState;
 
-// RX statistics
-extern uint32_t CRSF_LastChannelsPacked;
-extern uint32_t CRSF_PPS;  // Packets per second
-
-extern bool CRSF_ArmStatus;
-
-// TX statistics
-extern bool CRSF_TelemetryQueued;
-
-// CRSF sync bytes
-typedef enum { CRSF_SYNC_DEFAULT = 0xC8, CRSF_SYNC_EDGE_TX = 0xEE } CRSF_SYNC;
-
-// CRSF frame types
-typedef enum {
+/**
+* @brief Crossfire protocol frame types
+*/
+typedef enum
+{
 	CRSF_FRAMETYPE_GPS                       = 0x02,  // GPS position, ground speed, heading, altitude, satellite count
 	CRSF_FRAMETYPE_VARIO                     = 0x07,  // Vertical speed
 	CRSF_FRAMETYPE_BATTERY_SENSOR            = 0x08,  // Battery voltage, current, mAh, remaining percent
@@ -78,8 +66,11 @@ typedef enum {
 	CRSF_FRAMETYPE_ARDUPILOT_RESP            = 0x80   // Ardupilot output?
 } CRSF_FRAMETYPE;
 
-// CRSF device adresses
-typedef enum {
+/**
+* @brief Crossfire protocol extended mode adresses adresses
+*/
+typedef enum
+{
 	CRSF_ADDRESS_BROADCAST         = 0x00,  // Broadcast (all devices process packet)
 	CRSF_ADDRESS_USB               = 0x10,  // ?
 	CRSF_ADDRESS_BLUETOOTH         = 0x12,  // Bluetooth module
@@ -97,15 +88,36 @@ typedef enum {
 	CRSF_ADDRESS_ELRS_LUA          = 0xEF   // !!Non-Standard!! Source address used by ExpressLRS Lua
 } CRSF_ADDRESS;
 
+
+/**
+* @brief Crossfire protocol sync bytes
+*/
+typedef enum { CRSF_SYNC_DEFAULT = 0xC8, CRSF_SYNC_EDGE_TX = 0xEE } CRSF_SYNC;
+
+// Handset Data
+extern struct CRSF_ChannelsPacked CRSF_Channels;
+extern struct CRSF_LinkStatistics CRSF_LinkState;
+
+// RX statistics
+extern uint32_t CRSF_LastChannelsPacked;
+extern uint32_t CRSF_PPS;  // Packets per second
+
+//ARM status
+extern bool CRSF_ArmStatus;
+
+// TX statistics
+extern bool CRSF_TelemetryQueued;
+
+
 /**
  * @brief Called every time, after receiving RC Channels Packed packet
  */
-__weak void CRSF_OnChannelsPacked();
+void CRSF_OnChannelsPacked();
 
 /**
  * @brief Called every time, after receiving Link Statistics packet
  */
-__weak void CRSF_OnLinkStatistics();
+void CRSF_OnLinkStatistics();
 
 /**
  * @brief  	   Initialise communication with the reciever
@@ -120,31 +132,32 @@ void CRSF_Init(UART_HandleTypeDef* huart);
 void CRSF_HandleRX(UART_HandleTypeDef* huart);
 
 /**
- * @brief 	  Queue GPS data to be sent as telemetry
+ * @brief 	   Queue GPS data to be sent as telemetry
  * @param[in] *gps GPS data structure pointer
  */
 void CRSF_QueueGPSData(struct CRSF_GPSData* gps);
 
 /**
- * @brief	  Queue Battery data to be sent as telemetry
+ * @brief	   Queue Battery data to be sent as telemetry
  * @param[in] *bat Battery data structure pointer
  */
 void CRSF_QueueBatteryData(struct CRSF_BatteryData* bat);
 
 /**
  * @brief  Queue ping sent to handset
- * 		   (Last time I checked it doesn't repond)
+ * 		   (Last time I checked it doesn't repond :( )
  */
 void CRSF_QueuePing();
 
 /**
- * @brief	  Restore communication after uart error (call inside ErrorCallback)
- * @param[in] huart uart handle
+ * @brief	   Restore communication after uart error (call inside ErrorCallback)
+ * @param[in]  huart uart handle
  */
 void CRSF_HandleErr(UART_HandleTypeDef* huart);
 
 /**
  * @brief Print channels data (1-4) through serial connection
+ * The definition is marker __weak so you can easily change printed channels
  */
 void CRSF_DEBUG_PrintChannels();
 

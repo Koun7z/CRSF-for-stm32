@@ -8,6 +8,8 @@
 #ifndef INC_CRSF_HANDSETDATA_H_
 #define INC_CRSF_HANDSETDATA_H_
 
+#include <stdint.h>
+
 struct __attribute__((packed)) CRSF_ChannelsPacked
 {
 	unsigned Ch1  : 11;
