@@ -17,7 +17,7 @@
 #	include "stm32f4xx_hal.h"  // <- F411 blackpill used for testing
 
 // Telemetry config
-#define TELEMETRY_ENABLED 1
+#define TELEMETRY_ENABLED 0
 #define SERIAL_DEBUG      0
 
 // Arming behaviour
@@ -95,8 +95,8 @@ typedef enum
 typedef enum { CRSF_SYNC_DEFAULT = 0xC8, CRSF_SYNC_EDGE_TX = 0xEE } CRSF_SYNC;
 
 // Handset Data
-extern struct CRSF_ChannelsPacked CRSF_Channels;
-extern struct CRSF_LinkStatistics CRSF_LinkState;
+extern CRSF_ChannelsPacked CRSF_Channels;
+extern CRSF_LinkStatistics CRSF_LinkState;
 
 // RX statistics
 extern uint32_t CRSF_LastChannelsPacked;
@@ -129,19 +129,19 @@ void CRSF_Init(UART_HandleTypeDef* huart);
  * @brief     Parse recieved packet (call inside RxCpltCallback)
  * @param[in] huart uart handle
  */
-void CRSF_HandleRX(UART_HandleTypeDef* huart);
+void CRSF_HandleRX(const UART_HandleTypeDef* huart);
 
 /**
  * @brief 	   Queue GPS data to be sent as telemetry
  * @param[in] *gps GPS data structure pointer
  */
-void CRSF_QueueGPSData(struct CRSF_GPSData* gps);
+void CRSF_QueueGPSData(CRSF_GPSData* gps);
 
 /**
  * @brief	   Queue Battery data to be sent as telemetry
  * @param[in] *bat Battery data structure pointer
  */
-void CRSF_QueueBatteryData(struct CRSF_BatteryData* bat);
+void CRSF_QueueBatteryData(CRSF_BatteryData* bat);
 
 /**
  * @brief  Queue ping sent to handset

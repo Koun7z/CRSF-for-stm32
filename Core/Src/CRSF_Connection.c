@@ -34,8 +34,8 @@
 
 
 // Global data structures
-struct CRSF_ChannelsPacked CRSF_Channels;
-struct CRSF_LinkStatistics CRSF_LinkState;
+CRSF_ChannelsPacked CRSF_Channels;
+CRSF_LinkStatistics CRSF_LinkState;
 
 // RX statistics
 uint32_t CRSF_PPS                = 0;
@@ -73,7 +73,7 @@ HAL_StatusTypeDef CRSF_SendTelemetry()
 	return status;
 }
 
-static void _receptionComplete()
+static void receptionComplete()
 {
 	CRSF_RX_SYNC_BYTE = 0;
 	CRSF_RX_MSG_LEN   = 0;
@@ -82,7 +82,7 @@ static void _receptionComplete()
 	__HAL_DMA_DISABLE_IT(_uart->hdmarx, DMA_IT_HT);
 }
 
-static void _parseData()
+static void parseData()
 {
 	switch(CRSF_RX_FRAME_TYPE)
 	{
@@ -156,7 +156,7 @@ static void _parseData()
 	}
 }
 
-void CRSF_HandleRX(UART_HandleTypeDef* huart)
+void CRSF_HandleRX(const UART_HandleTypeDef* huart)
 {
 	if(huart != _uart)
 	{
@@ -173,26 +173,26 @@ void CRSF_HandleRX(UART_HandleTypeDef* huart)
 	if(CRC_CalculateCRC8(CRSF_RX_CRC_BEGIN, CRSF_RX_MSG_LEN) != 0)
 	{
 		DEBUG_LOG("CRC\n");
-		_receptionComplete();
+		receptionComplete();
 		return;
 	}
 
-	_parseData();
+	parseData();
 
 #if TELEMETRY_ENABLED
 	CRSF_SendTelemetry();
 #endif
 
-	_receptionComplete();
+	receptionComplete();
 }
 
-void CRSF_QueueGPSData(struct CRSF_GPSData* gps)
+void CRSF_QueueGPSData(CRSF_GPSData* gps)
 {
 	CRSF_TX_SYNC_BYTE  = CRSF_SYNC_DEFAULT;
-	CRSF_TX_MSG_LEN    = sizeof(struct CRSF_GPSData) + 2;
+	CRSF_TX_MSG_LEN    = sizeof(CRSF_GPSData) + 2;
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_GPS;
 
-	struct CRSF_GPSData* buff = (struct CRSF_GPSData*) CRSF_TX_DATA_BEGIN;
+	CRSF_GPSData* buff = (CRSF_GPSData*) CRSF_TX_DATA_BEGIN;
 
 	buff->Latitude       = __REV(gps->Latitude);
 	buff->Longitude      = __REV(gps->Longitude);
@@ -206,13 +206,13 @@ void CRSF_QueueGPSData(struct CRSF_GPSData* gps)
 
 }
 
-void CRSF_QueueBatteryData(struct CRSF_BatteryData* bat)
+void CRSF_QueueBatteryData(CRSF_BatteryData* bat)
 {
 	CRSF_TX_SYNC_BYTE  = CRSF_SYNC_DEFAULT;
-	CRSF_TX_MSG_LEN    = sizeof(struct CRSF_BatteryData) + 2;
+	CRSF_TX_MSG_LEN    = sizeof(CRSF_BatteryData) + 2;
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_BATTERY_SENSOR;
 
-	struct CRSF_BatteryData* buff = (struct CRSF_BatteryData*) CRSF_TX_DATA_BEGIN;
+	CRSF_BatteryData* buff = (CRSF_BatteryData*) CRSF_TX_DATA_BEGIN;
 
 	buff->Voltage          = __REV16(bat->Voltage);
 	buff->Current          = __REV16(bat->Current);
@@ -241,7 +241,7 @@ void CRSF_QueueVariometerData(int16_t climb)
 void CRSF_QueueBarometerData()
 {
 	CRSF_TX_SYNC_BYTE  = CRSF_SYNC_DEFAULT;
-	CRSF_TX_MSG_LEN    = sizeof(struct CRSF_BarometerData) + 2;
+	CRSF_TX_MSG_LEN    = sizeof(CRSF_BarometerData) + 2;
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_BARO_ALTITUDE;
 
 	// TODO
@@ -269,7 +269,7 @@ void CRSF_HandleErr(UART_HandleTypeDef* huart)
 	}
 
 	DEBUG_LOG("err: %lu\n", huart->ErrorCode);
-	_receptionComplete();
+	receptionComplete();
 }
 
 void CRSF_Init(UART_HandleTypeDef* huart)
@@ -278,7 +278,7 @@ void CRSF_Init(UART_HandleTypeDef* huart)
 
 	CRC_GenerateTable8();
 
-	_receptionComplete();
+	receptionComplete();
 }
 
 __weak void CRSF_DEBUG_PrintChannels()
