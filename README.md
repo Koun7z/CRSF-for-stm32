@@ -4,7 +4,7 @@
 
 CRSF for STM32 is a library providing an API to communicate with RC radio receivers
 using the [CRSFv2](https://github.com/crsf-wg/crsf?tab=readme-ov-file) serial protocol.
-The CRSF protocol is used both by [ExpressLRS](https://www.expresslrs.org) and [TBS Crossfire](https://www.team-blacksheep.com) radio transmitter.
+The CRSF protocol is used both by [ExpressLRS](https://www.expresslrs.org) and [TBS Crossfire](https://www.team-blacksheep.com) radio transmitters.
 
 > [!NOTE]
 > The library was tested only with RadioMaster ExpressLRS devices, as that is the only hardware that I currently own.
