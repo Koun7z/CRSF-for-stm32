@@ -16,7 +16,7 @@ typedef struct __attribute__((packed))
 	int32_t Longitude;
 	int16_t GroundSpeed;
 	int16_t GroundCourse;
-	uint16_t Altitue;
+	uint16_t Altitude;
 	uint8_t SatelliteCount;
 } CRSF_GPSData;
 

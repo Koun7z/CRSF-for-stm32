@@ -6,10 +6,10 @@
  */
 #include "CRSF_Connection.h"
 
-#include <stdio.h>
-#include <string.h>
+#include "CRSF_Config.h"
+#include "CRSF_CRC_8.h"
 
-#include "crc8.h"
+#include <string.h>
 
 
 // RX buffer
@@ -32,7 +32,6 @@
 #define CRSF_TX_SRC        CRSF_TX_Buffer[4]
 
 
-
 // Global data structures
 CRSF_ChannelsPacked CRSF_Channels;
 CRSF_LinkStatistics CRSF_LinkState;
@@ -41,45 +40,40 @@ CRSF_LinkStatistics CRSF_LinkState;
 uint32_t CRSF_PPS                = 0;
 uint32_t CRSF_LastChannelsPacked = 0;
 bool CRSF_ArmStatus              = false;
+bool CRSF_FailsafeStatus         = false;
 
 // TX statistics
 bool CRSF_TelemetryQueued = false;
 
 // Internal data
-UART_HandleTypeDef* _uart;
+UART_HandleTypeDef* uart;
 
 uint8_t CRSF_RX_Buffer[64];
 uint8_t CRSF_TX_Buffer[64];
 
 uint32_t CRSF_LastPacket = 0;
-uint32_t _packetCount    = 0;
+uint32_t packetCount     = 0;
 
-// Event callbacks
+/*
+** Event callbacks
+*/
+
 __weak void CRSF_OnChannelsPacked() {}
 __weak void CRSF_OnLinkStatistics() {}
+__weak void CRSF_OnFailsafe() {}
 
-HAL_StatusTypeDef CRSF_SendTelemetry()
-{
-	HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(_uart, CRSF_TX_Buffer, CRSF_TX_MSG_LEN + 2);
 
-	if(status != 0)
-	{
-		// TODO: handle err
-		DEBUG_LOG("Tele: %d\n", status);
-	}
-
-	CRSF_TelemetryQueued = false;
-
-	return status;
-}
+/*
+** RX functions
+*/
 
 static void receptionComplete()
 {
 	CRSF_RX_SYNC_BYTE = 0;
 	CRSF_RX_MSG_LEN   = 0;
 
-	HAL_UARTEx_ReceiveToIdle_DMA(_uart, CRSF_RX_Buffer, 64);
-	__HAL_DMA_DISABLE_IT(_uart->hdmarx, DMA_IT_HT);
+	HAL_UARTEx_ReceiveToIdle_DMA(uart, CRSF_RX_Buffer, 64);
+	__HAL_DMA_DISABLE_IT(uart->hdmarx, DMA_IT_HT);
 }
 
 static void parseData()
@@ -87,50 +81,60 @@ static void parseData()
 	switch(CRSF_RX_FRAME_TYPE)
 	{
 		case CRSF_FRAMETYPE_HEARTBEAT:
+			break;
 		case CRSF_FRAMETYPE_LINK_STATISTICS:
 			memcpy(&CRSF_LinkState, CRSF_RX_DATA_BEGIN, CRSF_RX_DATA_LEN);
 
-			CRSF_OnLinkStatistics();
+		CRSF_OnLinkStatistics();
 
-			DEBUG_LOG("RQly: %lu\n", CRSF_LinkState.UplinklinkQuality);
-			break;
+#if CRSF_FAILSAFE_ENABLE
+		if(CRSF_LinkState.UpLinkQuality < CRSF_LQ_FAILSAFE_THRESHOLD
+		   || CRSF_LinkState.UplinkRSSI_Ant1 > CRSF_RSSI_FAILSAFE_THRESHOLD)
+		{
+			CRSF_FailsafeStatus = true;
+			CRSF_OnFailsafe();
+		}
+#endif
+
+		DEBUG_LOG("RQly: %lu\n", CRSF_LinkState.UplinklinkQuality);
+		break;
 
 		case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
 			memcpy(&CRSF_Channels, CRSF_RX_DATA_BEGIN, CRSF_RX_DATA_LEN);
 
 #if CRSF_HANDLE_ARM
-			static uint8_t armCtr = 0;
+		static uint8_t armCtr = 0;
 
-			bool arm = (bool)(CRSF_ARM_CHANNEL > 1000);
-			if(CRSF_ArmStatus != arm)
+		bool arm = (bool)(CRSF_ARM_CHANNEL > 1000);
+		if(CRSF_ArmStatus != arm)
+		{
+			armCtr++;
+			if(armCtr > CRSF_ARM_DELAY)
 			{
-				armCtr++;
-				if(armCtr > CRSF_ARM_DELAY)
-				{
-					CRSF_ArmStatus = arm;
-				}
+				CRSF_ArmStatus = arm;
 			}
-			else
-			{
-				arm = 0;
-			}
+		}
+		else
+		{
+			arm = 0;
+		}
 #endif
 
-			CRSF_LastChannelsPacked      = HAL_GetTick();
-			static uint16_t _packetCount = 0;
-			static uint32_t _lastAvg     = 0;
-			if(HAL_GetTick() - _lastAvg >= 1000)
-			{
-				CRSF_PPS     = _packetCount;
-				_packetCount = 0;
-				_lastAvg     = HAL_GetTick();
-				DEBUG_LOG("PPS: %lu\n", CRSF_PPS);
-			}
+		CRSF_LastChannelsPacked      = HAL_GetTick();
+		static uint16_t _packetCount = 0;
+		static uint32_t _lastAvg     = 0;
+		if(HAL_GetTick() - _lastAvg >= 1000)
+		{
+			CRSF_PPS     = _packetCount;
+			_packetCount = 0;
+			_lastAvg     = HAL_GetTick();
+			DEBUG_LOG("PPS: %lu\n", CRSF_PPS);
+		}
+		_packetCount++;
 
-			_packetCount++;
-			CRSF_OnChannelsPacked();
+		CRSF_OnChannelsPacked();
 
-			break;
+		break;
 		case CRSF_FRAMETYPE_SUBSET_RC_CHANNELS_PACKED:
 		case CRSF_FRAMETYPE_DEVICE_PING:
 		case CRSF_FRAMETYPE_DEVICE_INFO:
@@ -148,29 +152,38 @@ static void parseData()
 		case CRSF_FRAMETYPE_DISPLAYPORT_CMD:
 		case CRSF_FRAMETYPE_ARDUPILOT_RESP:
 			DEBUG_LOG("TODO: %u\n", CRSF_RX_FRAME_TYPE);
-			break;
+		break;
 
 		default:
 			DEBUG_LOG("Unhandled pc %u\n", CRSF_RX_FRAME_TYPE);
-			break;
+		break;
 	}
+}
+
+void CRSF_Init(UART_HandleTypeDef* huart)
+{
+	uart = huart;
+
+	CRSF_CRC_Init();
+
+	receptionComplete();
 }
 
 void CRSF_HandleRX(const UART_HandleTypeDef* huart)
 {
-	if(huart != _uart)
+	if(huart != uart)
 	{
 		return;
 	}
 
 	if(CRSF_RX_SYNC_BYTE != CRSF_SYNC_DEFAULT && CRSF_RX_SYNC_BYTE != CRSF_SYNC_EDGE_TX)
 	{
-		HAL_UARTEx_ReceiveToIdle_DMA(_uart, CRSF_RX_Buffer, 64);
-		__HAL_DMA_DISABLE_IT(_uart->hdmarx, DMA_IT_HT);
+		HAL_UARTEx_ReceiveToIdle_DMA(uart, CRSF_RX_Buffer, 64);
+		__HAL_DMA_DISABLE_IT(uart->hdmarx, DMA_IT_HT);
 		return;
 	}
 
-	if(CRC_CalculateCRC8(CRSF_RX_CRC_BEGIN, CRSF_RX_MSG_LEN) != 0)
+	if(CRSF_CRC_Calculate(CRSF_RX_CRC_BEGIN, CRSF_RX_MSG_LEN) != 0)
 	{
 		DEBUG_LOG("CRC\n");
 		receptionComplete();
@@ -186,13 +199,38 @@ void CRSF_HandleRX(const UART_HandleTypeDef* huart)
 	receptionComplete();
 }
 
+void CRSF_HandleErr()
+{
+	DEBUG_LOG("err: %lu\n", huart->ErrorCode);
+	receptionComplete();
+}
+
+/*
+** TX functions
+*/
+
+HAL_StatusTypeDef CRSF_SendTelemetry()
+{
+	const HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(uart, CRSF_TX_Buffer, CRSF_TX_MSG_LEN + 2);
+
+	if(status != 0)
+	{
+		// TODO: handle err
+		DEBUG_LOG("Tele: %d\n", status);
+	}
+
+	CRSF_TelemetryQueued = false;
+
+	return status;
+}
+
 void CRSF_QueueGPSData(CRSF_GPSData* gps)
 {
 	CRSF_TX_SYNC_BYTE  = CRSF_SYNC_DEFAULT;
 	CRSF_TX_MSG_LEN    = sizeof(CRSF_GPSData) + 2;
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_GPS;
 
-	CRSF_GPSData* buff = (CRSF_GPSData*) CRSF_TX_DATA_BEGIN;
+	CRSF_GPSData* buff = (CRSF_GPSData*)CRSF_TX_DATA_BEGIN;
 
 	buff->Latitude       = __REV(gps->Latitude);
 	buff->Longitude      = __REV(gps->Longitude);
@@ -200,10 +238,9 @@ void CRSF_QueueGPSData(CRSF_GPSData* gps)
 	buff->GroundCourse   = __REV16(gps->GroundCourse);
 	buff->SatelliteCount = gps->SatelliteCount;
 
-	CRSF_TX_CRC = CRC_CalculateCRC8(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
+	CRSF_TX_CRC = CRSF_CRC_Calculate(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
 
 	CRSF_TelemetryQueued = true;
-
 }
 
 void CRSF_QueueBatteryData(CRSF_BatteryData* bat)
@@ -212,28 +249,28 @@ void CRSF_QueueBatteryData(CRSF_BatteryData* bat)
 	CRSF_TX_MSG_LEN    = sizeof(CRSF_BatteryData) + 2;
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_BATTERY_SENSOR;
 
-	CRSF_BatteryData* buff = (CRSF_BatteryData*) CRSF_TX_DATA_BEGIN;
+	CRSF_BatteryData* buff = (CRSF_BatteryData*)CRSF_TX_DATA_BEGIN;
 
 	buff->Voltage          = __REV16(bat->Voltage);
 	buff->Current          = __REV16(bat->Current);
 	buff->UsedCapacity     = __REV(bat->UsedCapacity) >> 8;
 	buff->BatteryRemaining = bat->BatteryRemaining;
 
-	CRSF_TX_CRC = CRC_CalculateCRC8(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
+	CRSF_TX_CRC = CRSF_CRC_Calculate(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
 
 	CRSF_TelemetryQueued = true;
 }
 
-void CRSF_QueueVariometerData(int16_t climb)
+void CRSF_QueueVariometerData(const int16_t climb)
 {
 	CRSF_TX_SYNC_BYTE  = CRSF_SYNC_DEFAULT;
 	CRSF_TX_MSG_LEN    = sizeof(climb) + 2;
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_VARIO;
 
-	int16_t* buff = (int16_t*) CRSF_TX_Buffer;
+	int16_t* buff = (int16_t*)CRSF_TX_Buffer;
 	*buff         = __REV16(climb);
 
-	CRSF_TX_CRC = CRC_CalculateCRC8(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
+	CRSF_TX_CRC = CRSF_CRC_Calculate(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
 
 	CRSF_TelemetryQueued = true;
 }
@@ -254,31 +291,9 @@ void CRSF_QueuePing()
 	CRSF_TX_FRAME_TYPE = CRSF_FRAMETYPE_DEVICE_PING;
 	CRSF_TX_DEST       = CRSF_ADDRESS_BROADCAST;
 	CRSF_TX_SRC        = CRSF_ADDRESS_FLIGHT_CONTROLLER;
-	CRSF_TX_CRC        = CRC_CalculateCRC8(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
+	CRSF_TX_CRC        = CRSF_CRC_Calculate(CRSF_TX_CRC_BEGIN, CRSF_TX_MSG_LEN + 1);
 
 	CRSF_TelemetryQueued = true;
-}
-
-void CRSF_HandleTX() {}
-
-void CRSF_HandleErr(UART_HandleTypeDef* huart)
-{
-	if(huart != _uart)
-	{
-		return;
-	}
-
-	DEBUG_LOG("err: %lu\n", huart->ErrorCode);
-	receptionComplete();
-}
-
-void CRSF_Init(UART_HandleTypeDef* huart)
-{
-	_uart = huart;
-
-	CRC_GenerateTable8();
-
-	receptionComplete();
 }
 
 __weak void CRSF_DEBUG_PrintChannels()

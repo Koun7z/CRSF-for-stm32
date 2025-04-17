@@ -6,6 +6,11 @@
 #define CRSF_COMMONTYPES_H
 
 /**
+ * @brief Crossfire protocol sync bytes
+ */
+typedef enum { CRSF_SYNC_DEFAULT = 0xC8, CRSF_SYNC_EDGE_TX = 0xEE } CRSF_SYNC;
+
+/**
  * @brief Crossfire protocol frame types
  */
 typedef enum {
