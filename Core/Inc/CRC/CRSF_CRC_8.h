@@ -8,6 +8,8 @@
 #ifndef INC_CRC8_H_
 #define INC_CRC8_H_
 
+#include "CRSF_HAL_Include.h"
+
 #define CRSF_CRC_HARD 0
 
 #define CRC8_POLYNOMIAL 0xd5

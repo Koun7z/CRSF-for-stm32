@@ -43,17 +43,17 @@ extern bool CRSF_TelemetryQueued;
 /**
  * @brief Called every time, after receiving RC Channels Packed packet
  */
-void CRSF_OnChannelsPacked();
+void CRSF_OnChannelsPacked(void);
 
 /**
  * @brief Called every time, after receiving Link Statistics packet
  */
-void CRSF_OnLinkStatistics();
+void CRSF_OnLinkStatistics(void);
 
 /**
  * Called after Low LQ failsafe occurred.
  */
-void CRSF_OnFailsafe();
+void CRSF_OnFailsafe(void);
 
 /*
 ** Functions
@@ -93,7 +93,7 @@ void CRSF_QueuePing(void);
  * @brief  Communication after uart error
  *         Should be called after every HAL_UART_ErrorCallback
  */
-void CRSF_HandleErr();
+void CRSF_HandleErr(void);
 
 /**
  * @brief  Print channels data (1-4) through serial connection

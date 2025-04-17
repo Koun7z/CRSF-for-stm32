@@ -67,7 +67,7 @@ __weak void CRSF_OnFailsafe() {}
 ** RX functions
 */
 
-static void receptionComplete()
+static void receptionComplete(void)
 {
 	CRSF_RX_SYNC_BYTE = 0;
 	CRSF_RX_MSG_LEN   = 0;
@@ -76,7 +76,7 @@ static void receptionComplete()
 	__HAL_DMA_DISABLE_IT(uart->hdmarx, DMA_IT_HT);
 }
 
-static void parseData()
+static void parseData(void)
 {
 	switch(CRSF_RX_FRAME_TYPE)
 	{
@@ -169,13 +169,8 @@ void CRSF_Init(UART_HandleTypeDef* huart)
 	receptionComplete();
 }
 
-void CRSF_HandleRX(const UART_HandleTypeDef* huart)
+void CRSF_HandleRX()
 {
-	if(huart != uart)
-	{
-		return;
-	}
-
 	if(CRSF_RX_SYNC_BYTE != CRSF_SYNC_DEFAULT && CRSF_RX_SYNC_BYTE != CRSF_SYNC_EDGE_TX)
 	{
 		HAL_UARTEx_ReceiveToIdle_DMA(uart, CRSF_RX_Buffer, 64);

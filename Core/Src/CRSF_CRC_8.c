@@ -2,7 +2,6 @@
 // Created by pwoli on 17.04.2025.
 //
 #include "CRSF_CRC_8.h"
-#include "CRSF_HAL_Include.h"
 
 #if CRSF_CRC_HARD
 CRC_HandleTypeDef hcrc;
