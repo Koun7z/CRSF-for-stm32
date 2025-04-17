@@ -11,15 +11,22 @@
 #include "CRSF_HAL_Include.h"
 #include "CRSF_HandsetData.h"
 #include "CRSF_TelemetryData.h"
-#include "CRSF_CommonTypes.h"
 
 #include <stdbool.h>
+
+/*
+** Defines
+*/
 
 #if SERIAL_DEBUG
 #  define DEBUG_LOG(...) printf(__VA_ARGS__)
 #else
 #  define DEBUG_LOG(...)
 #endif
+
+/*
+** Global variables
+*/
 
 // Handset Data
 extern CRSF_ChannelsPacked CRSF_Channels;
@@ -51,7 +58,7 @@ void CRSF_OnChannelsPacked(void);
 void CRSF_OnLinkStatistics(void);
 
 /**
- * Called after Low LQ failsafe occurred.
+ * Called after LQ/RSSI failsafe occurred.
  */
 void CRSF_OnFailsafe(void);
 
@@ -60,8 +67,8 @@ void CRSF_OnFailsafe(void);
 */
 
 /**
- * @brief  	   Initialise communication with the reciever
- * @param[in]  huart uart handle
+ * @brief  	   Initialise communication with the receiver
+ * @param[in] *huart uart handle
  */
 void CRSF_Init(UART_HandleTypeDef* huart);
 
@@ -71,17 +78,17 @@ void CRSF_Init(UART_HandleTypeDef* huart);
  */
 void CRSF_HandleRX(void);
 
-/**
+/**s
  * @brief 	   Queue GPS data to be sent as telemetry
  * @param[in] *gps GPS data structure pointer
  */
-void CRSF_QueueGPSData(CRSF_GPSData* gps);
+void CRSF_QueueGPSData(const CRSF_GPSData* gps);
 
 /**
  * @brief	   Queue Battery data to be sent as telemetry
- * @param[in] *bat Battery data structure pointer
+ * @param[in] *battery Battery data structure pointer
  */
-void CRSF_QueueBatteryData(CRSF_BatteryData* bat);
+void CRSF_QueueBatteryData(const CRSF_BatteryData* battery);
 
 /**
  * @brief  Queue ping sent to handset

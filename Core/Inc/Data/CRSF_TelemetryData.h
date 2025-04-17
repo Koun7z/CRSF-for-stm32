@@ -12,27 +12,26 @@
 
 typedef struct __attribute__((packed))
 {
-	int32_t Latitude;
-	int32_t Longitude;
-	int16_t GroundSpeed;
-	int16_t GroundCourse;
-	uint16_t Altitude;
+	int32_t Latitude;       // [deg * 1e7]
+	int32_t Longitude;      // [deg * 1e7]
+	int16_t GroundSpeed;    // [km/h]
+	int16_t GroundCourse;   // [deg * 100]
+	uint16_t Altitude;      // [meters + 1000m]
 	uint8_t SatelliteCount;
 } CRSF_GPSData;
 
-typedef struct __attribute__((packed))
+typedef struct
 {
-	int Voltage          : 16;
-	int Current          : 16;
-	int UsedCapacity     : 24;
-	int BatteryRemaining : 8;
+	int16_t Voltage;          // [dV <- It's a deci-volt]
+	int16_t Current;          // [dA]
+	uint32_t UsedCapacity;    // [mAh]
+	int32_t BatteryRemaining; // [%]
 } CRSF_BatteryData;
 
-typedef struct __attribute__((packed))
+typedef struct
 {
-	unsigned Unit          : 1;
-	unsigned Altitude      : 15;
-	unsigned VerticalSpeed : 16;
+	int32_t Altitude;      // [dm]
+	int32_t VerticalSpeed; // [cm / s]
 } CRSF_BarometerData;
 
 #endif /* INC_CRSF_TELEMETRYDATA_H_ */
