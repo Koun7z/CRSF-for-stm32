@@ -95,7 +95,7 @@ project(example_project)
 add_compile_option(${COMPILE_OPTIONS})
 add_link_options(${LINKER_OPTIONS})
 
-# Global HAL driver definitions
+# Example global HAL driver definitions
 add_compile_definitions(-DUSE_HAL_DRIVER -DSTM32F411xE -DSTM32F4)
 
 # Add the library as subdirectory
