@@ -83,7 +83,7 @@ call, if you want to use the same options for compiling this library.
 Otherwise, specify compiler and linker flags using `target_compile_options()`/`target_link_options()`.
 
 ```cmake
-#Example CMakeLists file
+# Example CMakeLists file
 cmake_minimum_required(VERSION 3.14)
 project(example_project)
 
@@ -95,7 +95,7 @@ project(example_project)
 add_compile_option(${COMPILE_OPTIONS})
 add_link_options(${LINKER_OPTIONS})
 
-#Global HAL driver definitions
+# Global HAL driver definitions
 add_compile_definitions(-DUSE_HAL_DRIVER -DSTM32F411xE -DSTM32F4)
 
 # Add the library as subdirectory
