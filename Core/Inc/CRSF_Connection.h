@@ -12,9 +12,22 @@
 
 #include <stdbool.h>
 
-// Platform dependent include
-// Delete this one and include your own, based on MCU you are using
-#	include "stm32f4xx_hal.h"  // <- F411 blackpill used for testing
+#if defined(STM32F3)
+#  include "stm32f3xx_hal.h"
+#elif defined(STM32F4)
+#  include "stm32f4xx_hal.h"
+#elif defined(STM32F7)
+#  include "stm32f7xx_hal.h"
+#elif defined(STM32L4)
+#  include "stm32l4xx_hal.h"
+#elif defined(STM32L %)
+#  include "stm32l5xx_hal.h"
+#elif defined(STM32H7)
+#  include "stm32h7xx_hal.h"
+#elif defined(STM32G4)
+#  include "stm32g4xx_hal.h"
+#endif
+
 
 // Telemetry config
 #define TELEMETRY_ENABLED 0
@@ -33,10 +46,9 @@
 
 
 /**
-* @brief Crossfire protocol frame types
-*/
-typedef enum
-{
+ * @brief Crossfire protocol frame types
+ */
+typedef enum {
 	CRSF_FRAMETYPE_GPS                       = 0x02,  // GPS position, ground speed, heading, altitude, satellite count
 	CRSF_FRAMETYPE_VARIO                     = 0x07,  // Vertical speed
 	CRSF_FRAMETYPE_BATTERY_SENSOR            = 0x08,  // Battery voltage, current, mAh, remaining percent
@@ -67,10 +79,9 @@ typedef enum
 } CRSF_FRAMETYPE;
 
 /**
-* @brief Crossfire protocol extended mode adresses adresses
-*/
-typedef enum
-{
+ * @brief Crossfire protocol extended mode adresses adresses
+ */
+typedef enum {
 	CRSF_ADDRESS_BROADCAST         = 0x00,  // Broadcast (all devices process packet)
 	CRSF_ADDRESS_USB               = 0x10,  // ?
 	CRSF_ADDRESS_BLUETOOTH         = 0x12,  // Bluetooth module
@@ -90,8 +101,8 @@ typedef enum
 
 
 /**
-* @brief Crossfire protocol sync bytes
-*/
+ * @brief Crossfire protocol sync bytes
+ */
 typedef enum { CRSF_SYNC_DEFAULT = 0xC8, CRSF_SYNC_EDGE_TX = 0xEE } CRSF_SYNC;
 
 // Handset Data
@@ -102,7 +113,7 @@ extern CRSF_LinkStatistics CRSF_LinkState;
 extern uint32_t CRSF_LastChannelsPacked;
 extern uint32_t CRSF_PPS;  // Packets per second
 
-//ARM status
+// ARM status
 extern bool CRSF_ArmStatus;
 
 // TX statistics
