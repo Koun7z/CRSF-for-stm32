@@ -35,7 +35,7 @@ typedef struct __attribute__((packed))
 {
 	uint8_t UplinkRSSI_Ant1;
 	uint8_t UplinkRSSI_Ant2;
-	uint8_t UplinklinkQuality;
+	uint8_t UpLinkQuality;
 	int8_t UplinkSNR;
 	uint8_t DivActiveAnt;
 	uint8_t RFMode;
