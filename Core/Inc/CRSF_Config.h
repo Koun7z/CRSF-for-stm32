@@ -25,7 +25,7 @@
 */
 
 #define CRSF_FAILSAFE_ENABLE 1
-#define CRSF_LQ_FAILSAFE_THRESHOLD  80      // [%]
-#define CRSF_RSSI_FAILSAFE_THRESHOLD 105    // [dBm * -1]
+#define CRSF_LQ_FAILSAFE_THRESHOLD  60      // [%]
+#define CRSF_RSSI_FAILSAFE_THRESHOLD 90    // [dBm * -1]
 
 #endif //CRSF_CONFIG_H
