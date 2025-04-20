@@ -37,7 +37,7 @@ CRSF for STM32 was developed using the [ARM GNU Toolchain](https://developer.arm
 ### Necessary files:
 
 To compile the library you will need to provide it with necessary HAL drivers, based on specific MCU you're using.
-Easiest way to get all needed drivers is to generate the project files using the [CubeMX](https://www.st.com/en/development-tools/stm32cubemx.html#overview) environment.
+Easiest way to get all needed drivers is to generate project files using the [CubeMX](https://www.st.com/en/development-tools/stm32cubemx.html#overview) environment.
 
 The library is set up to be built with CMake, but if you want to use any other tools,
 all files needed to build the library (except HAL Drivers) are inside the `Core` folder.
