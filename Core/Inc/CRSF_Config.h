@@ -9,7 +9,7 @@
 ** Telemetry config
 */
 
-#define TELEMETRY_ENABLED 0
+#define TELEMETRY_ENABLED 1
 #define SERIAL_DEBUG      0
 
 /*
