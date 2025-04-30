@@ -6,6 +6,17 @@
 #define CRSF_CONFIG_H
 
 /*
+** Serial debug
+*/
+
+#if SERIAL_DEBUG
+#  include <stdio.h>
+#  define DEBUG_LOG(...) printf(__VA_ARGS__)
+#else
+#  define DEBUG_LOG(...)
+#endif
+
+/*
 ** Telemetry config
 */
 
