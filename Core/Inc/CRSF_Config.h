@@ -5,9 +5,12 @@
 #ifndef CRSF_CONFIG_H
 #define CRSF_CONFIG_H
 
+
 /*
 ** Serial debug
 */
+
+#define SERIAL_DEBUG 0
 
 #if SERIAL_DEBUG
 #  include <stdio.h>
@@ -20,15 +23,14 @@
 ** Telemetry config
 */
 
-#define TELEMETRY_ENABLED 1
-#define SERIAL_DEBUG      0
+#define TELEMETRY_ENABLED 0
 
 /*
 ** Arms status handling config
 */
 
 #define CRSF_HANDLE_ARM  1
-#define CRSF_ARM_CHANNEL CRSF_Channels.Ch5
+#define CRSF_ARM_CHANNEL CRSF_Channels[4]
 #define CRSF_ARM_DELAY   5  // Packet num
 
 /*
@@ -36,7 +38,7 @@
 */
 
 #define CRSF_FAILSAFE_ENABLE 1
-#define CRSF_LQ_FAILSAFE_THRESHOLD  60      // [%]
-#define CRSF_RSSI_FAILSAFE_THRESHOLD 90    // [dBm * -1]
+#define CRSF_LQ_FAILSAFE_THRESHOLD  60   // [%]
+#define CRSF_RSSI_FAILSAFE_THRESHOLD 90  // [dBm * -1]
 
 #endif //CRSF_CONFIG_H

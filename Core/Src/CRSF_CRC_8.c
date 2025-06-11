@@ -2,6 +2,7 @@
 // Created by pwoli on 17.04.2025.
 //
 #include "CRSF_CRC_8.h"
+#include "CRSF_HAL_Include.h"
 
 #if CRSF_CRC_HARD
 CRC_HandleTypeDef hcrc;
@@ -11,7 +12,7 @@ static uint8_t CRC8Table[256];
 
 void CRSF_CRC_Init(void)
 {
-#if CRSF_CRC_HARD
+#ifdef CRSF_CRC_HARD
 	hcrc.Instance = CRC;
 	CRC->POL = CRC8_POLYNOMIAL;
 	CRC->INIT = CRC8_INIT;

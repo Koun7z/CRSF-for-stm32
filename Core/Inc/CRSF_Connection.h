@@ -19,7 +19,7 @@
 */
 
 // Handset Data
-extern CRSF_ChannelsPacked CRSF_Channels;
+extern uint32_t CRSF_Channels[16];
 extern CRSF_LinkStatistics CRSF_LinkState;
 
 // RX statistics
@@ -68,15 +68,22 @@ void CRSF_Init(UART_HandleTypeDef* huart);
  */
 void CRSF_HandleRX(void);
 
-/**s
+/**
+ * @brief  	   Sends telemetry frame to the receiver
+ *			   (Called automatically after reception)
+ * @param[in] *huart  uart handle
+ */
+HAL_StatusTypeDef CRSF_SendTelemetry(UART_HandleTypeDef* huart);
+
+/**
  * @brief 	   Queue GPS data to be sent as telemetry
- * @param[in] *gps GPS data structure pointer
+ * @param[in] *gps  GPS data structure pointer
  */
 void CRSF_QueueGPSData(const CRSF_GPSData* gps);
 
 /**
  * @brief	   Queue Battery data to be sent as telemetry
- * @param[in] *battery Battery data structure pointer
+ * @param[in] *battery  Battery data structure pointer
  */
 void CRSF_QueueBatteryData(const CRSF_BatteryData* battery);
 
@@ -93,9 +100,8 @@ void CRSF_QueuePing(void);
 void CRSF_HandleErr(void);
 
 /**
- * @brief  Print channels data (1-4) through serial connection
- *         The definition is marked __weak so you can easily change printed channels
+ * @brief  Prints data of n first RC channels
  */
-void CRSF_DEBUG_PrintChannels(void);
+void CRSF_DEBUG_PrintChannels(uint32_t n_channels);
 
 #endif /* INC_CRSF_CONNECTION_H_ */

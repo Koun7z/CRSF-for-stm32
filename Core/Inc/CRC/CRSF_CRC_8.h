@@ -8,9 +8,7 @@
 #ifndef INC_CRC8_H_
 #define INC_CRC8_H_
 
-#include "CRSF_HAL_Include.h"
-
-#define CRSF_CRC_HARD 0
+#include <stdint.h>
 
 #define CRC8_POLYNOMIAL 0xd5
 #define CRC8_INIT       0x00
