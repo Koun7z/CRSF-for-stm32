@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-typedef struct __attribute__((packed))
+typedef struct __attribute__((packed)) CRSF_GPSData
 {
 	int32_t Latitude;       // [deg * 1e7]
 	int32_t Longitude;      // [deg * 1e7]
@@ -20,7 +20,7 @@ typedef struct __attribute__((packed))
 	uint8_t SatelliteCount;
 } CRSF_GPSData;
 
-typedef struct
+typedef struct CRSF_BatteryData
 {
 	int16_t Voltage;          // [dV <- It's a deci-volt]
 	int16_t Current;          // [dA]
@@ -28,7 +28,7 @@ typedef struct
 	int32_t BatteryRemaining; // [%]
 } CRSF_BatteryData;
 
-typedef struct
+typedef struct CRSF_BarometerData
 {
 	int32_t Altitude;      // [dm]
 	int32_t VerticalSpeed; // [cm / s]

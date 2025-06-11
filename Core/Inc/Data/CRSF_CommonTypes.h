@@ -8,12 +8,12 @@
 /**
  * @brief Crossfire protocol sync bytes
  */
-typedef enum { CRSF_SYNC_DEFAULT = 0xC8, CRSF_SYNC_EDGE_TX = 0xEE } CRSF_SYNC;
+typedef enum CRSF_SYNC { CRSF_SYNC_DEFAULT = 0xC8, CRSF_SYNC_EDGE_TX = 0xEE } CRSF_SYNC;
 
 /**
  * @brief Crossfire protocol frame types
  */
-typedef enum {
+typedef enum CRSF_FRAMETYPE {
 	CRSF_FRAMETYPE_GPS                       = 0x02,  // GPS position, ground speed, heading, altitude, satellite count
 	CRSF_FRAMETYPE_VARIO                     = 0x07,  // Vertical speed
 	CRSF_FRAMETYPE_BATTERY_SENSOR            = 0x08,  // Battery voltage, current, mAh, remaining percent
@@ -46,7 +46,7 @@ typedef enum {
 /**
  * @brief Crossfire protocol extended mode adresses adresses
  */
-typedef enum {
+typedef enum CRSF_ADDRESS {
 	CRSF_ADDRESS_BROADCAST         = 0x00,  // Broadcast (all devices process packet)
 	CRSF_ADDRESS_USB               = 0x10,  // ?
 	CRSF_ADDRESS_BLUETOOTH         = 0x12,  // Bluetooth module
